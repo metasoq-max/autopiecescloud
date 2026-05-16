@@ -1,18 +1,5 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
-
-Route::view('/', 'public.home')->name('home');
-Route::view('/fonctionnalites', 'public.features')->name('features');
-Route::view('/tarifs', 'public.pricing')->name('pricing');
-Route::view('/contact', 'public.contact')->name('contact');
-
-Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
-    Route::view('/dashboard', 'dashboard.index')->name('dashboard');
-    Route::view('/produits', 'products.index')->name('products.index');
-    Route::view('/clients', 'customers.index')->name('customers.index');
-    Route::view('/factures', 'invoices.index')->name('invoices.index');
-    Route::view('/devis', 'quotes.index')->name('quotes.index');
-    Route::view('/fournisseurs', 'suppliers.index')->name('suppliers.index');
-    Route::view('/parametres', 'settings.index')->name('settings.index');
-});
+use App\Http\Controllers\{DashboardController,ProductController,CustomerController,QuoteController,InvoiceController,CompanySettingsController};
+Route::view('/', 'welcome'); Route::view('/tarifs','pricing'); Route::view('/fonctionnalites','features'); Route::view('/contact','contact');
+Route::middleware(['auth','tenant'])->group(function(){Route::get('/dashboard',DashboardController::class)->name('dashboard');Route::resource('products',ProductController::class);Route::resource('customers',CustomerController::class);Route::resource('quotes',QuoteController::class);Route::resource('invoices',InvoiceController::class);Route::get('/settings/company',[CompanySettingsController::class,'edit'])->name('settings.company');Route::put('/settings/company',[CompanySettingsController::class,'update']);});
