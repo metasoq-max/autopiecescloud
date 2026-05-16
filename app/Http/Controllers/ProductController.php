@@ -1,12 +1,51 @@
-<?php namespace App\Http\Controllers;
-use App\Models${c}; use Illuminate\Http\Request;
-class ProductController extends Controller {
-public function __invoke(){return view('dashboard');}
-public function index(){$items=Product::query()->latest()->paginate(); return view(strtolower('Product').'s.index',compact('items'));}
-public function create(){return view(strtolower('Product').'s.create');}
-public function store(Request $r){Product::create($r->all()+['company_id'=>auth()->user()->company_id]);return redirect()->route(strtolower('Product').'s.index');}
-public function show(Product $product){return view(strtolower('Product').'s.show',['item'=>$product]);}
-public function edit(Product $product){return view(strtolower('Product').'s.edit',['item'=>$product]);}
-public function update(Request $r, Product $product){$product->update($r->all());return back();}
-public function destroy(Product $product){$product->delete();return back();}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Models\Product;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class ProductController extends Controller
+{
+    public function index(): View
+    {
+        $products = Product::query()->where('company_id', 1)->latest()->paginate(10);
+        return view('products.index', compact('products'));
+    }
+
+    public function create(): View
+    {
+        return view('products.create');
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255', 'reference' => 'required|string|max:255', 'brand' => 'nullable|string|max:255',
+            'purchase_price' => 'required|numeric|min:0', 'selling_price' => 'required|numeric|min:0', 'quantity' => 'required|integer|min:0',
+            'min_stock_alert' => 'required|integer|min:0', 'status' => 'required|in:active,inactive',
+        ]);
+        Product::query()->create($data + ['company_id' => 1, 'uuid' => (string) \Illuminate\Support\Str::uuid()]);
+        return redirect()->route('products.index');
+    }
+
+    public function edit(Product $product): View
+    {
+        return view('products.edit', compact('product'));
+    }
+
+    public function update(Request $request, Product $product): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255', 'reference' => 'required|string|max:255', 'brand' => 'nullable|string|max:255',
+            'purchase_price' => 'required|numeric|min:0', 'selling_price' => 'required|numeric|min:0', 'quantity' => 'required|integer|min:0',
+            'min_stock_alert' => 'required|integer|min:0', 'status' => 'required|in:active,inactive',
+        ]);
+        $product->update($data);
+        return redirect()->route('products.index');
+    }
 }

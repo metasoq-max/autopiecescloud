@@ -1,12 +1,19 @@
-<?php namespace App\Http\Controllers;
-use App\Models${c}; use Illuminate\Http\Request;
-class CustomerController extends Controller {
-public function __invoke(){return view('dashboard');}
-public function index(){$items=Customer::query()->latest()->paginate(); return view(strtolower('Customer').'s.index',compact('items'));}
-public function create(){return view(strtolower('Customer').'s.create');}
-public function store(Request $r){Customer::create($r->all()+['company_id'=>auth()->user()->company_id]);return redirect()->route(strtolower('Customer').'s.index');}
-public function show(Customer $customer){return view(strtolower('Customer').'s.show',['item'=>$customer]);}
-public function edit(Customer $customer){return view(strtolower('Customer').'s.edit',['item'=>$customer]);}
-public function update(Request $r, Customer $customer){$customer->update($r->all());return back();}
-public function destroy(Customer $customer){$customer->delete();return back();}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Models\Customer;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class CustomerController extends Controller
+{
+    public function index(): View { $customers = Customer::query()->where('company_id',1)->latest()->paginate(10); return view('customers.index', compact('customers')); }
+    public function create(): View { return view('customers.create'); }
+    public function store(Request $request): RedirectResponse { $data=$request->validate(['first_name'=>'required|string|max:255','last_name'=>'required|string|max:255','phone'=>'required|string|max:40','email'=>'nullable|email','vehicle_brand'=>'nullable|string|max:120','vehicle_model'=>'nullable|string|max:120','license_plate'=>'nullable|string|max:40']); Customer::query()->create($data+['company_id'=>1,'uuid'=>(string)\Illuminate\Support\Str::uuid()]); return redirect()->route('customers.index'); }
+    public function edit(Customer $customer): View { return view('customers.edit', compact('customer')); }
+    public function update(Request $request, Customer $customer): RedirectResponse { $data=$request->validate(['first_name'=>'required|string|max:255','last_name'=>'required|string|max:255','phone'=>'required|string|max:40','email'=>'nullable|email','vehicle_brand'=>'nullable|string|max:120','vehicle_model'=>'nullable|string|max:120','license_plate'=>'nullable|string|max:40']); $customer->update($data); return redirect()->route('customers.index'); }
 }
